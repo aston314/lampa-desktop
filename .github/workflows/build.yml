@@ -296,7 +296,7 @@ jobs:
           mkdir -p Lampa-Local.AppDir/usr/{bin,share/applications,share/icons/hicolor/256x256/apps}
 
           # Copy webframe
-          cp $(which webframe) Lampa-Local.AppDir/usr/bin/
+          cp ~/go/bin/webframe Lampa-Local.AppDir/usr/bin/
 
           # Copy Lampa source
           cp -r lampa-source Lampa-Local.AppDir/usr/share/lampa
@@ -332,7 +332,7 @@ jobs:
           mkdir -p Lampa-Online.AppDir/usr/{bin,share/applications,share/icons/hicolor/256x256/apps,share/lampa}
 
           # Copy webframe
-          cp $(which webframe) Lampa-Online.AppDir/usr/bin/
+          cp ~/go/bin/webframe Lampa-Online.AppDir/usr/bin/
 
           # Copy icon
           cp lampa-source/icons/android-chrome-384x384.png Lampa-Online.AppDir/usr/share/icons/hicolor/256x256/apps/lampa.png
