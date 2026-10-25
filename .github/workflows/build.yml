@@ -36,10 +36,10 @@ jobs:
         run: |
           git clone https://github.com/yumata/lampa.git lampa-source
 
-      - name: Generate icon
+      - name: Verify icon
         run: |
-          # Use pre-generated rounded icon
-          cp lampa-source/icons/lampa-rounded.icns lampa.icns
+          # Icon already exists in root
+          ls -lh lampa.icns
 
       - name: Build Lampa-Local.app
         run: |
