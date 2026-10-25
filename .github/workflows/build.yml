@@ -54,7 +54,7 @@ jobs:
           mkdir -p Lampa-Local.app/Contents/{MacOS,Resources}
 
           # Copy webframe binary
-          cp /usr/local/bin/webframe Lampa-Local.app/Contents/MacOS/
+          cp ~/go/bin/webframe Lampa-Local.app/Contents/MacOS/
 
           # Copy Lampa source
           cp -r lampa-source/* Lampa-Local.app/Contents/Resources/
@@ -108,7 +108,7 @@ jobs:
           mkdir -p Lampa-Online.app/Contents/{MacOS,Resources}
 
           # Copy webframe binary
-          cp /usr/local/bin/webframe Lampa-Online.app/Contents/MacOS/
+          cp ~/go/bin/webframe Lampa-Online.app/Contents/MacOS/
 
           # Copy icon
           cp lampa.icns Lampa-Online.app/Contents/Resources/
