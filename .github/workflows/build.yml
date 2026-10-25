@@ -112,11 +112,16 @@ jobs:
           # Copy icon
           cp lampa.icns Lampa-Online.app/Contents/Resources/
 
+          # Copy splash page and welcome image
+          cp splash.html Lampa-Online.app/Contents/Resources/
+          cp welcome.jpg Lampa-Online.app/Contents/Resources/
+
           # Create launch script
           cat > Lampa-Online.app/Contents/MacOS/Lampa << 'EOF'
           #!/bin/bash
           DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-          exec "$DIR/webframe" -d -w 1280x720 http://lampa.mx
+          RESOURCES="$DIR/../Resources"
+          exec "$DIR/webframe" -d -w 1280x720 "file://$RESOURCES/splash.html"
           EOF
           chmod +x Lampa-Online.app/Contents/MacOS/Lampa
 
@@ -222,7 +227,7 @@ jobs:
       - name: Build Lampa-Online (Windows)
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path Lampa-Online-Windows
+          New-Item -ItemType Directory -Force -Path Lampa-Online-Windows/Resources
 
           # Copy webframe
           Copy-Item "$env:GOPATH\bin\webframe.exe" -Destination Lampa-Online-Windows/
@@ -230,10 +235,15 @@ jobs:
           # Copy icon
           Copy-Item lampa-source/icons/android-chrome-384x384.png -Destination Lampa-Online-Windows/lampa.png
 
+          # Copy splash page and welcome image
+          Copy-Item splash.html -Destination Lampa-Online-Windows/Resources/
+          Copy-Item welcome.jpg -Destination Lampa-Online-Windows/Resources/
+
           # Create launch script
           @"
           @echo off
-          "%~dp0webframe.exe" -d -w 1280x720 http://lampa.mx
+          set DIR=%~dp0
+          "%DIR%webframe.exe" -d -w 1280x720 "file:///%DIR%Resources/splash.html"
           "@ | Out-File -FilePath Lampa-Online-Windows/Lampa.bat -Encoding ASCII
 
       - name: Create ZIP packages
@@ -319,7 +329,7 @@ jobs:
 
       - name: Build Lampa-Online AppImage
         run: |
-          mkdir -p Lampa-Online.AppDir/usr/{bin,share/applications,share/icons/hicolor/256x256/apps}
+          mkdir -p Lampa-Online.AppDir/usr/{bin,share/applications,share/icons/hicolor/256x256/apps,share/lampa}
 
           # Copy webframe
           cp $(which webframe) Lampa-Online.AppDir/usr/bin/
@@ -327,6 +337,10 @@ jobs:
           # Copy icon
           cp lampa-source/icons/android-chrome-384x384.png Lampa-Online.AppDir/usr/share/icons/hicolor/256x256/apps/lampa.png
           cp lampa-source/icons/android-chrome-384x384.png Lampa-Online.AppDir/lampa.png
+
+          # Copy splash page and welcome image
+          cp splash.html Lampa-Online.AppDir/usr/share/lampa/
+          cp welcome.jpg Lampa-Online.AppDir/usr/share/lampa/
 
           # Create desktop file
           cat > Lampa-Online.AppDir/lampa-online.desktop << 'EOF'
@@ -343,7 +357,7 @@ jobs:
           cat > Lampa-Online.AppDir/AppRun << 'EOF'
           #!/bin/bash
           DIR="$(dirname "$(readlink -f "${0}")")"
-          exec "$DIR/usr/bin/webframe" -d -w 1280x720 http://lampa.mx
+          exec "$DIR/usr/bin/webframe" -d -w 1280x720 "file://$DIR/usr/share/lampa/splash.html"
           EOF
           chmod +x Lampa-Online.AppDir/AppRun
 
