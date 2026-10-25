@@ -1,0 +1,258 @@
+name: Build Lampa Apps
+
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Install webframe
+        run: go install github.com/tractordev/webframe@latest
+
+      - name: Clone Lampa source
+        run: |
+          git clone https://github.com/yumata/lampa.git lampa-source
+
+      - name: Generate icon
+        run: |
+          mkdir -p icon.iconset
+          cp lampa-source/icons/android-chrome-384x384.png temp.png
+          sips -z 16 16 temp.png --out icon.iconset/icon_16x16.png
+          sips -z 32 32 temp.png --out icon.iconset/icon_16x16@2x.png
+          sips -z 32 32 temp.png --out icon.iconset/icon_32x32.png
+          sips -z 64 64 temp.png --out icon.iconset/icon_32x32@2x.png
+          sips -z 128 128 temp.png --out icon.iconset/icon_128x128.png
+          sips -z 256 256 temp.png --out icon.iconset/icon_128x128@2x.png
+          sips -z 256 256 temp.png --out icon.iconset/icon_256x256.png
+          sips -z 512 512 temp.png --out icon.iconset/icon_256x256@2x.png
+          sips -z 512 512 temp.png --out icon.iconset/icon_512x512.png
+          cp temp.png icon.iconset/icon_512x512@2x.png
+          iconutil -c icns icon.iconset -o lampa.icns
+
+      - name: Build Lampa-Local.app
+        run: |
+          mkdir -p Lampa-Local.app/Contents/{MacOS,Resources}
+
+          # Copy webframe binary
+          cp $(which webframe) Lampa-Local.app/Contents/MacOS/
+
+          # Copy Lampa source
+          cp -r lampa-source/* Lampa-Local.app/Contents/Resources/
+
+          # Copy icon
+          cp lampa.icns Lampa-Local.app/Contents/Resources/
+
+          # Create launch script
+          cat > Lampa-Local.app/Contents/MacOS/Lampa << 'EOF'
+          #!/bin/bash
+          DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+          RESOURCES="$DIR/../Resources"
+          exec "$DIR/webframe" -d -w 1280x720 "file://$RESOURCES/index.html"
+          EOF
+          chmod +x Lampa-Local.app/Contents/MacOS/Lampa
+
+          # Create Info.plist
+          cat > Lampa-Local.app/Contents/Info.plist << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleDisplayName</key>
+            <string>Lampa</string>
+            <key>CFBundleExecutable</key>
+            <string>Lampa</string>
+            <key>CFBundleIconFile</key>
+            <string>lampa.icns</string>
+            <key>CFBundleIdentifier</key>
+            <string>com.lampa.app</string>
+            <key>CFBundleName</key>
+            <string>Lampa</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>CFBundleShortVersionString</key>
+            <string>1.0.0</string>
+            <key>CFBundleVersion</key>
+            <string>1.0.0</string>
+            <key>LSMinimumSystemVersion</key>
+            <string>10.13</string>
+            <key>NSHighResolutionCapable</key>
+            <true/>
+            <key>NSSupportsAutomaticGraphicsSwitching</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Build Lampa-Online.app
+        run: |
+          mkdir -p Lampa-Online.app/Contents/{MacOS,Resources}
+
+          # Copy webframe binary
+          cp $(which webframe) Lampa-Online.app/Contents/MacOS/
+
+          # Copy icon
+          cp lampa.icns Lampa-Online.app/Contents/Resources/
+
+          # Create launch script
+          cat > Lampa-Online.app/Contents/MacOS/Lampa << 'EOF'
+          #!/bin/bash
+          DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+          exec "$DIR/webframe" -d -w 1280x720 http://lampa.mx
+          EOF
+          chmod +x Lampa-Online.app/Contents/MacOS/Lampa
+
+          # Create Info.plist with ATS exception
+          cat > Lampa-Online.app/Contents/Info.plist << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleDisplayName</key>
+            <string>Lampa Online</string>
+            <key>CFBundleExecutable</key>
+            <string>Lampa</string>
+            <key>CFBundleIconFile</key>
+            <string>lampa.icns</string>
+            <key>CFBundleIdentifier</key>
+            <string>com.lampa.online</string>
+            <key>CFBundleName</key>
+            <string>Lampa Online</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>CFBundleShortVersionString</key>
+            <string>1.0.0</string>
+            <key>CFBundleVersion</key>
+            <string>1.0.0</string>
+            <key>LSMinimumSystemVersion</key>
+            <string>10.13</string>
+            <key>NSHighResolutionCapable</key>
+            <true/>
+            <key>NSSupportsAutomaticGraphicsSwitching</key>
+            <true/>
+            <key>NSAppTransportSecurity</key>
+            <dict>
+              <key>NSAllowsArbitraryLoads</key>
+              <true/>
+            </dict>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Create DMG packages
+        run: |
+          # Package Local version
+          hdiutil create -volname "Lampa Local" -srcfolder Lampa-Local.app -ov -format UDZO Lampa-Local-macOS.dmg
+
+          # Package Online version
+          hdiutil create -volname "Lampa Online" -srcfolder Lampa-Online.app -ov -format UDZO Lampa-Online-macOS.dmg
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos-apps
+          path: |
+            Lampa-Local-macOS.dmg
+            Lampa-Online-macOS.dmg
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Install webframe
+        run: go install github.com/tractordev/webframe@latest
+
+      - name: Clone Lampa source
+        run: git clone https://github.com/yumata/lampa.git lampa-source
+
+      - name: Build Lampa-Local (Windows)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path Lampa-Local-Windows/Resources
+
+          # Copy webframe
+          Copy-Item "$env:GOPATH/bin/webframe.exe" -Destination Lampa-Local-Windows/
+
+          # Copy Lampa source
+          Copy-Item -Recurse lampa-source/* -Destination Lampa-Local-Windows/Resources/
+
+          # Copy icon
+          Copy-Item lampa-source/icons/android-chrome-384x384.png -Destination Lampa-Local-Windows/lampa.png
+
+          # Create launch script
+          @"
+          @echo off
+          set DIR=%~dp0
+          "%DIR%webframe.exe" -d -w 1280x720 "file:///%DIR%Resources/index.html"
+          "@ | Out-File -FilePath Lampa-Local-Windows/Lampa.bat -Encoding ASCII
+
+      - name: Build Lampa-Online (Windows)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path Lampa-Online-Windows
+
+          # Copy webframe
+          Copy-Item "$env:GOPATH/bin/webframe.exe" -Destination Lampa-Online-Windows/
+
+          # Copy icon
+          Copy-Item lampa-source/icons/android-chrome-384x384.png -Destination Lampa-Online-Windows/lampa.png
+
+          # Create launch script
+          @"
+          @echo off
+          "%~dp0webframe.exe" -d -w 1280x720 http://lampa.mx
+          "@ | Out-File -FilePath Lampa-Online-Windows/Lampa.bat -Encoding ASCII
+
+      - name: Create ZIP packages
+        shell: pwsh
+        run: |
+          Compress-Archive -Path Lampa-Local-Windows/* -DestinationPath Lampa-Local-Windows.zip
+          Compress-Archive -Path Lampa-Online-Windows/* -DestinationPath Lampa-Online-Windows.zip
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-apps
+          path: |
+            Lampa-Local-Windows.zip
+            Lampa-Online-Windows.zip
+
+  release:
+    needs: [build-macos, build-windows]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            macos-apps/*
+            windows-apps/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
