@@ -28,7 +28,7 @@ jobs:
         run: |
           git clone https://github.com/tractordev/webframe.git
           cd webframe
-          go build -o webframe
+          CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o webframe ./cmd/webframe
           mkdir -p ~/go/bin
           mv webframe ~/go/bin/
 
@@ -39,8 +39,8 @@ jobs:
       - name: Generate icon
         run: |
           mkdir -p icon.iconset
-          # Use square icon for macOS (system adds rounded corners automatically)
-          cp lampa-source/icons/apple-touch-icon.png temp.png
+          # Use the existing icon (already has proper rounded corners)
+          cp lampa-source/icons/android-chrome-384x384.png temp.png
           sips -z 16 16 temp.png --out icon.iconset/icon_16x16.png
           sips -z 32 32 temp.png --out icon.iconset/icon_16x16@2x.png
           sips -z 32 32 temp.png --out icon.iconset/icon_32x32.png
@@ -287,7 +287,7 @@ jobs:
         run: |
           git clone https://github.com/tractordev/webframe.git
           cd webframe
-          go build -o webframe
+          CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o webframe ./cmd/webframe
           mkdir -p ~/go/bin
           mv webframe ~/go/bin/
 
