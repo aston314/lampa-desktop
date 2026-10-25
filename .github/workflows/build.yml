@@ -39,7 +39,8 @@ jobs:
       - name: Generate icon
         run: |
           mkdir -p icon.iconset
-          cp lampa-source/icons/android-chrome-384x384.png temp.png
+          # Use square icon for macOS (system adds rounded corners automatically)
+          cp lampa-source/icons/apple-touch-icon.png temp.png
           sips -z 16 16 temp.png --out icon.iconset/icon_16x16.png
           sips -z 32 32 temp.png --out icon.iconset/icon_16x16@2x.png
           sips -z 32 32 temp.png --out icon.iconset/icon_32x32.png
@@ -58,6 +59,7 @@ jobs:
 
           # Copy webframe binary
           cp ~/go/bin/webframe Lampa-Local.app/Contents/MacOS/
+          chmod +x Lampa-Local.app/Contents/MacOS/webframe
 
           # Copy Lampa source
           cp -r lampa-source/* Lampa-Local.app/Contents/Resources/
@@ -112,6 +114,7 @@ jobs:
 
           # Copy webframe binary
           cp ~/go/bin/webframe Lampa-Online.app/Contents/MacOS/
+          chmod +x Lampa-Online.app/Contents/MacOS/webframe
 
           # Copy icon
           cp lampa.icns Lampa-Online.app/Contents/Resources/
@@ -302,6 +305,7 @@ jobs:
 
           # Copy webframe
           cp ~/go/bin/webframe Lampa-Local.AppDir/usr/bin/
+          chmod +x Lampa-Local.AppDir/usr/bin/webframe
 
           # Copy Lampa source
           cp -r lampa-source Lampa-Local.AppDir/usr/share/lampa
@@ -338,6 +342,7 @@ jobs:
 
           # Copy webframe
           cp ~/go/bin/webframe Lampa-Online.AppDir/usr/bin/
+          chmod +x Lampa-Online.AppDir/usr/bin/webframe
 
           # Copy icon
           cp lampa-source/icons/android-chrome-384x384.png Lampa-Online.AppDir/usr/share/icons/hicolor/256x256/apps/lampa.png
