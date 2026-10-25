@@ -53,7 +53,7 @@ jobs:
           mkdir -p Lampa-Local.app/Contents/{MacOS,Resources}
 
           # Copy webframe binary
-          cp $(which webframe) Lampa-Local.app/Contents/MacOS/
+          cp /usr/local/bin/webframe Lampa-Local.app/Contents/MacOS/
 
           # Copy Lampa source
           cp -r lampa-source/* Lampa-Local.app/Contents/Resources/
@@ -107,7 +107,7 @@ jobs:
           mkdir -p Lampa-Online.app/Contents/{MacOS,Resources}
 
           # Copy webframe binary
-          cp $(which webframe) Lampa-Online.app/Contents/MacOS/
+          cp /usr/local/bin/webframe Lampa-Online.app/Contents/MacOS/
 
           # Copy icon
           cp lampa.icns Lampa-Online.app/Contents/Resources/
@@ -264,7 +264,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y wget file libfuse2 libwebkit2gtk-4.0-dev
+          sudo apt-get install -y wget file libfuse2 libwebkit2gtk-4.1-dev
 
       - name: Clone and build webframe
         run: |
