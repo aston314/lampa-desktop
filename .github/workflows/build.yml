@@ -238,8 +238,112 @@ jobs:
             Lampa-Local-Windows.zip
             Lampa-Online-Windows.zip
 
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget file libfuse2
+
+      - name: Install webframe
+        run: go install github.com/tractordev/webframe@latest
+
+      - name: Clone Lampa source
+        run: git clone https://github.com/yumata/lampa.git lampa-source
+
+      - name: Download appimagetool
+        run: |
+          wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+
+      - name: Build Lampa-Local AppImage
+        run: |
+          mkdir -p Lampa-Local.AppDir/usr/{bin,share/applications,share/icons/hicolor/256x256/apps}
+
+          # Copy webframe
+          cp $(which webframe) Lampa-Local.AppDir/usr/bin/
+
+          # Copy Lampa source
+          cp -r lampa-source Lampa-Local.AppDir/usr/share/lampa
+
+          # Copy icon
+          cp lampa-source/icons/android-chrome-384x384.png Lampa-Local.AppDir/usr/share/icons/hicolor/256x256/apps/lampa.png
+          cp lampa-source/icons/android-chrome-384x384.png Lampa-Local.AppDir/lampa.png
+
+          # Create desktop file
+          cat > Lampa-Local.AppDir/lampa.desktop << 'EOF'
+          [Desktop Entry]
+          Name=Lampa
+          Exec=lampa
+          Icon=lampa
+          Type=Application
+          Categories=AudioVideo;Video;
+          Comment=Lampa media player
+          EOF
+
+          # Create AppRun script
+          cat > Lampa-Local.AppDir/AppRun << 'EOF'
+          #!/bin/bash
+          DIR="$(dirname "$(readlink -f "${0}")")"
+          exec "$DIR/usr/bin/webframe" -d -w 1280x720 "file://$DIR/usr/share/lampa/index.html"
+          EOF
+          chmod +x Lampa-Local.AppDir/AppRun
+
+          # Build AppImage
+          ARCH=x86_64 ./appimagetool-x86_64.AppImage Lampa-Local.AppDir Lampa-Local-Linux-x86_64.AppImage
+
+      - name: Build Lampa-Online AppImage
+        run: |
+          mkdir -p Lampa-Online.AppDir/usr/{bin,share/applications,share/icons/hicolor/256x256/apps}
+
+          # Copy webframe
+          cp $(which webframe) Lampa-Online.AppDir/usr/bin/
+
+          # Copy icon
+          cp lampa-source/icons/android-chrome-384x384.png Lampa-Online.AppDir/usr/share/icons/hicolor/256x256/apps/lampa.png
+          cp lampa-source/icons/android-chrome-384x384.png Lampa-Online.AppDir/lampa.png
+
+          # Create desktop file
+          cat > Lampa-Online.AppDir/lampa-online.desktop << 'EOF'
+          [Desktop Entry]
+          Name=Lampa Online
+          Exec=lampa-online
+          Icon=lampa
+          Type=Application
+          Categories=AudioVideo;Video;
+          Comment=Lampa media player (online)
+          EOF
+
+          # Create AppRun script
+          cat > Lampa-Online.AppDir/AppRun << 'EOF'
+          #!/bin/bash
+          DIR="$(dirname "$(readlink -f "${0}")")"
+          exec "$DIR/usr/bin/webframe" -d -w 1280x720 http://lampa.mx
+          EOF
+          chmod +x Lampa-Online.AppDir/AppRun
+
+          # Build AppImage
+          ARCH=x86_64 ./appimagetool-x86_64.AppImage Lampa-Online.AppDir Lampa-Online-Linux-x86_64.AppImage
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-apps
+          path: |
+            Lampa-Local-Linux-x86_64.AppImage
+            Lampa-Online-Linux-x86_64.AppImage
+
   release:
-    needs: [build-macos, build-windows]
+    needs: [build-macos, build-windows, build-linux]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
@@ -252,6 +356,7 @@ jobs:
           files: |
             macos-apps/*
             windows-apps/*
+            linux-apps/*
           draft: false
           prerelease: false
         env:

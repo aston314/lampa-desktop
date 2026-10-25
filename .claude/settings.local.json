@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -i \"\\\\.zip$\")",
+      "Bash(unzip -q webframe-main.zip)",
+      "Bash(go version *)",
+      "Bash(make build *)"
+    ]
+  }
+}
