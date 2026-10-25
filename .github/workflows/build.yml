@@ -26,7 +26,8 @@ jobs:
           git clone https://github.com/tractordev/webframe.git
           cd webframe
           go build -o webframe
-          sudo mv webframe /usr/local/bin/
+          mkdir -p ~/go/bin
+          mv webframe ~/go/bin/
 
       - name: Clone Lampa source
         run: |
@@ -281,7 +282,8 @@ jobs:
           git clone https://github.com/tractordev/webframe.git
           cd webframe
           go build -o webframe
-          sudo mv webframe /usr/local/bin/
+          mkdir -p ~/go/bin
+          mv webframe ~/go/bin/
 
       - name: Clone Lampa source
         run: git clone https://github.com/yumata/lampa.git lampa-source
