@@ -173,8 +173,16 @@ jobs:
           </plist>
           EOF
 
-      - name: Create DMG packages
+      - name: Sign and package apps
         run: |
+          # Ad-hoc sign the apps (no certificate needed)
+          codesign --force --deep --sign - Lampa-Local.app
+          codesign --force --deep --sign - Lampa-Online.app
+
+          # Verify signatures
+          codesign -dv Lampa-Local.app
+          codesign -dv Lampa-Online.app
+
           # Remove extended attributes (quarantine flags)
           xattr -cr Lampa-Local.app
           xattr -cr Lampa-Online.app
