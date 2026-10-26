@@ -68,11 +68,11 @@ jobs:
 
           # Create launch script
           cat > Lampa-Local.app/Contents/MacOS/Lampa << 'EOF'
-          #!/bin/bash
-          DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-          RESOURCES="$DIR/../Resources"
-          exec "$DIR/webframe" -d -w 1280x720 "file://$RESOURCES/index.html"
-          EOF
+#!/bin/bash
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+RESOURCES="$DIR/../Resources"
+exec "$DIR/webframe" -d -w 1280x720 "file://$RESOURCES/index.html"
+EOF
           chmod +x Lampa-Local.app/Contents/MacOS/Lampa
 
           # Create Info.plist
@@ -129,11 +129,11 @@ jobs:
 
           # Create launch script
           cat > Lampa-Online.app/Contents/MacOS/Lampa << 'EOF'
-          #!/bin/bash
-          DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-          RESOURCES="$DIR/../Resources"
-          exec "$DIR/webframe" -d -w 1280x720 "file://$RESOURCES/splash.html"
-          EOF
+#!/bin/bash
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+RESOURCES="$DIR/../Resources"
+exec "$DIR/webframe" -d -w 1280x720 "file://$RESOURCES/splash.html"
+EOF
           chmod +x Lampa-Online.app/Contents/MacOS/Lampa
 
           # Create Info.plist with ATS exception
