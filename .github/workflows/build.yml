@@ -67,12 +67,14 @@ jobs:
           cp lampa.icns Lampa-Local.app/Contents/Resources/
 
           # Create launch script
-          cat > Lampa-Local.app/Contents/MacOS/Lampa << 'EOF'
-#!/bin/bash
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-RESOURCES="$DIR/../Resources"
-exec "$DIR/webframe" -d -w 1280x720 "file://$RESOURCES/index.html"
-EOF
+          cat > Lampa-Local.app/Contents/MacOS/Lampa <<'SCRIPT'
+          #!/bin/bash
+          DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+          RESOURCES="$DIR/../Resources"
+          exec "$DIR/webframe" -d -w 1280x720 "file://$RESOURCES/index.html"
+          SCRIPT
+          # Remove leading spaces
+          sed -i '' 's/^          //' Lampa-Local.app/Contents/MacOS/Lampa
           chmod +x Lampa-Local.app/Contents/MacOS/Lampa
 
           # Create Info.plist
@@ -128,12 +130,14 @@ EOF
           cp welcome.jpg Lampa-Online.app/Contents/Resources/
 
           # Create launch script
-          cat > Lampa-Online.app/Contents/MacOS/Lampa << 'EOF'
-#!/bin/bash
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-RESOURCES="$DIR/../Resources"
-exec "$DIR/webframe" -d -w 1280x720 "file://$RESOURCES/splash.html"
-EOF
+          cat > Lampa-Online.app/Contents/MacOS/Lampa <<'SCRIPT'
+          #!/bin/bash
+          DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+          RESOURCES="$DIR/../Resources"
+          exec "$DIR/webframe" -d -w 1280x720 "file://$RESOURCES/splash.html"
+          SCRIPT
+          # Remove leading spaces
+          sed -i '' 's/^          //' Lampa-Online.app/Contents/MacOS/Lampa
           chmod +x Lampa-Online.app/Contents/MacOS/Lampa
 
           # Create Info.plist with ATS exception
